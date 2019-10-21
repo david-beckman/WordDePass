@@ -14,11 +14,6 @@ namespace WordDePass.Conosle
     {
         private static async Task Main(string[] args)
         {
-            var type = typeof(Alphabet);
-            var fields = type.GetFields();
-            Console.WriteLine(string.Join(", ", fields.Select(field => Alphabet.GetByName(field.Name))));
-            return;
-
             var program = new Program();
 
             if (args != null)
