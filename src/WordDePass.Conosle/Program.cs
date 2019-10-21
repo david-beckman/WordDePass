@@ -112,6 +112,21 @@ namespace WordDePass.Conosle
                             hints.AddSuffix(value);
                             break;
 
+                        case 'l':
+                            try
+                            {
+                                hints.MinLength = int.Parse(value, NumberStyles.Integer, Thread.CurrentThread.CurrentCulture);
+                                hints.MaxLength = hints.MinLength;
+                            }
+                            catch (Exception e)
+                            {
+                                throw new ArgumentException(
+                                    string.Format(Thread.CurrentThread.CurrentCulture, Strings.Args_InvalidLength, Strings.Minimum),
+                                    e);
+                            }
+
+                            break;
+
                         case 'n':
                             try
                             {

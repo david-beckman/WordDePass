@@ -140,6 +140,7 @@ Options:
   -i {infix}:     Specifies the infix (additive)
   -s {suffix}:    Specifies the suffix (additive)
   -n {minimum}:   Specifies the minimum password length
-  -x {maximum}:   Specifies the maximum password length</value>
+  -x {maximum}:   Specifies the maximum password length
+  -l {length}:    Specifies the lengh (i.e. both min and max)</value>
   </data>
 </root>
