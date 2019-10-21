@@ -116,7 +116,30 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Args_InvalidLength" xml:space="preserve">
+    <value>Invalid {0} length specified.</value>
+  </data>
+  <data name="Args_UnknownOption" xml:space="preserve">
+    <value>Unknonwn option: {0}.</value>
+  </data>
+  <data name="Maximum" xml:space="preserve">
+    <value>maximum</value>
+  </data>
+  <data name="Minimum" xml:space="preserve">
+    <value>minimum</value>
+  </data>
   <data name="OutputFormat" xml:space="preserve">
     <value>{0}: {1}</value>
+  </data>
+  <data name="Usage" xml:space="preserve">
+    <value>dotnet run [options] {filepath} [{filepath} ...]
+Options:
+  -h:             Print this help
+  -a {alphabet}:  Specifies the alphabet (additive)
+  -p {prefix}:    Specifies the prefix (additive)
+  -i {infix}:     Specifies the infix (additive)
+  -s {suffix}:    Specifies the suffix (additive)
+  -n {minimum}:   Specifies the minimum password length
+  -x {maximum}:   Specifies the maximum password length</value>
   </data>
 </root>

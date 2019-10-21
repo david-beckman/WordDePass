@@ -15,6 +15,8 @@ namespace WordDePass
     public class FixedLengthPasswordGenerator : IEnumerator<string>
     {
         private int[] current;
+        private bool started;
+        private bool finished;
 
         /// <summary>Initializes a new instance of the <see cref="FixedLengthPasswordGenerator" /> class.</summary>
         /// <param name="passwordLength">The length of the passwords in the collection.</param>
@@ -44,7 +46,11 @@ namespace WordDePass
         public Alphabet Alphabet { get; }
 
         /// <inheritdoc />
-        public string Current => this.current != null ? new string(this.current.Select(index => this.Alphabet[index]).ToArray()) : throw new InvalidOperationException();
+        public string Current => this.started && !this.finished ?
+            new string(this.current.Select(index => this.Alphabet[index]).ToArray()) :
+            throw new InvalidOperationException(this.started ?
+                Strings.InvalidOperation_EnumNotStarted :
+                Strings.InvalidOperation_EnumEnded);
 
         /// <inheritdoc />
         object IEnumerator.Current => this.Current;
@@ -56,6 +62,7 @@ namespace WordDePass
 
             if (this.current == null)
             {
+                this.started = true;
                 this.current = new int[this.PasswordLength];
                 return true;
             }
@@ -71,13 +78,15 @@ namespace WordDePass
                 this.current[i] = 0;
             }
 
-            return i >= 0;
+            this.finished = i < 0;
+            return !this.finished;
         }
 
         /// <inheritdoc />
         public void Reset()
         {
             this.current = null;
+            this.started = this.finished = false;
         }
 
         /// <inheritdoc />

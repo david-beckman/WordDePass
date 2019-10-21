@@ -119,4 +119,10 @@
   <data name="Arg_NonNegative" xml:space="preserve">
     <value>'{0}' must be non-negative.</value>
   </data>
+  <data name="InvalidOperation_EnumEnded" xml:space="preserve">
+    <value>Enumeration already finished.</value>
+  </data>
+  <data name="InvalidOperation_EnumNotStarted" xml:space="preserve">
+    <value>Enumeration has not started. Call MoveNext.</value>
+  </data>
 </root>

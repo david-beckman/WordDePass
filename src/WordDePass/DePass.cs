@@ -6,6 +6,7 @@
 namespace WordDePass
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -37,48 +38,45 @@ namespace WordDePass
         }
 
         /// <summary>Finds the password.</summary>
-        /// <returns>The password.</returns>
-        public string FindPassword()
-        {
-            var alphabet = Alphabet.LowerCase +
-                Alphabet.UpperCase +
-                Alphabet.Numeric +
-                Alphabet.NonWhitespaceSymbol;
-
-            for (var i = 0; i < 10; i++)
-            {
-                var collection = new FixedLengthPasswordCollection(i, alphabet);
-                foreach (var password in collection)
-                {
-                    if (this.checker.CheckPassword(password))
-                    {
-                        return password;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>Finds the password.</summary>
+        /// <param name="hints">The various password hints.</param>
         /// <param name="token">The cancellation token.</param>
         /// <returns>The password.</returns>
-        public async Task<string> FindPasswordAsync(CancellationToken token)
+        public async Task<string> FindPasswordAsync(PasswordHints hints = null, CancellationToken token = default)
         {
-            var alphabet = Alphabet.LowerCase +
-                Alphabet.UpperCase +
-                Alphabet.Numeric +
-                Alphabet.NonWhitespaceSymbol;
+            hints = hints ?? new PasswordHints();
+            var alphabet = hints.Alphabet;
 
-            for (var i = 0; i < 10; i++)
+            using (var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                var collection = new FixedLengthPasswordCollection(i, alphabet);
-                foreach (var password in collection)
+                var allFixes = hints.AllFixes;
+                var tasks = Enumerable.Range(0, hints.AllFixes.Count).Select(_ => (Task<string>)null).ToList();
+                for (int i = 0; i < allFixes.Count; i++)
                 {
-                    if (await this.checker.CheckPasswordAsync(password, token).ConfigureAwait(false))
+                    var fixes = allFixes[i];
+                    tasks[i] = Task.Run(async () =>
                     {
-                        return password;
+                        for (var length = hints.MinLength.Value; length <= hints.MaxLength.Value; length++)
+                        {
+                            var password = await this.FindPasswordAsync(alphabet, length, fixes, tokenSource.Token).ConfigureAwait(false);
+                            if (password != null)
+                            {
+                                return password;
+                            }
+                        }
+
+                        return null;
+                    });
+                }
+
+                while (tasks.Count > 0)
+                {
+                    var first = await Task.WhenAny(tasks).ConfigureAwait(false);
+                    if (first.Result != null)
+                    {
+                        return first.Result;
                     }
+
+                    tasks.Remove(first);
                 }
             }
 
@@ -105,6 +103,37 @@ namespace WordDePass
             }
 
             this.checker = null;
+        }
+
+        private async Task<string> FindPasswordAsync(Alphabet alphabet, int length, Fixes fixes, CancellationToken token)
+        {
+            var remainder = length - fixes.Length;
+
+            for (int leftLength = 0; leftLength <= remainder; leftLength++)
+            {
+                var rightLength = remainder - leftLength;
+
+                var leftCollection = new FixedLengthPasswordCollection(leftLength, alphabet);
+                foreach (var left in leftCollection)
+                {
+                    var rightCollection = new FixedLengthPasswordCollection(rightLength, alphabet);
+                    foreach (var right in rightCollection)
+                    {
+                        var password = fixes.ToString(left, right);
+                        if (await this.checker.CheckPasswordAsync(password, token).ConfigureAwait(false))
+                        {
+                            return password;
+                        }
+                    }
+                }
+
+                if (!fixes.HasInfix)
+                {
+                    break;
+                }
+            }
+
+            return null;
         }
     }
 }
