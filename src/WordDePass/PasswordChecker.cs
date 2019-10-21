@@ -76,6 +76,14 @@ namespace WordDePass
 
         /// <summary>Checks to see if the password works.</summary>
         /// <param name="password">The password to check.</param>
+        /// <returns><value>true</value> if the password works; otherwise <value>false</value>.</returns>
+        public bool CheckPassword(string password)
+        {
+            return TryPassword(this.GetBytes(), password);
+        }
+
+        /// <summary>Checks to see if the password works.</summary>
+        /// <param name="password">The password to check.</param>
         /// <param name="token">The cancellation token.</param>
         /// <returns><value>true</value> if the password works; otherwise <value>false</value>.</returns>
         public async Task<bool> CheckPasswordAsync(string password, CancellationToken token)
@@ -117,6 +125,29 @@ namespace WordDePass
                     return false;
                 }
             }
+        }
+
+        private byte[] GetBytes()
+        {
+            lock (this.mutex)
+            {
+                if (this.bytes != null)
+                {
+                    return this.bytes;
+                }
+            }
+
+            var bytes = File.ReadAllBytes(this.file.FullName);
+
+            lock (this.mutex)
+            {
+                if (this.bytes == null)
+                {
+                    this.bytes = bytes;
+                }
+            }
+
+            return bytes;
         }
 
         private async Task<byte[]> GetBytesAsync(CancellationToken token)

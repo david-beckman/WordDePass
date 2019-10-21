@@ -14,6 +14,11 @@ namespace WordDePass.Conosle
     {
         private static async Task Main(string[] args)
         {
+            var type = typeof(Alphabet);
+            var fields = type.GetFields();
+            Console.WriteLine(string.Join(", ", fields.Select(field => Alphabet.GetByName(field.Name))));
+            return;
+
             var program = new Program();
 
             if (args != null)
@@ -23,7 +28,7 @@ namespace WordDePass.Conosle
                     try
                     {
                         await Task.WhenAll(
-                            args.Where(arg => !string.IsNullOrWhiteSpace(arg)).Select(arg => program.Start(arg, tokenSource.Token)))
+                            args.Where(arg => !string.IsNullOrWhiteSpace(arg)).Select(arg => Task.Run(() => program.Start(arg))))
                             .ConfigureAwait(false);
                     }
                     catch
@@ -35,7 +40,7 @@ namespace WordDePass.Conosle
             }
         }
 
-        private async Task Start(string filename, CancellationToken token)
+        private async Task StartAsync(string filename, CancellationToken token)
         {
             string password;
 
@@ -43,6 +48,19 @@ namespace WordDePass.Conosle
             using (var passFinder = new DePass(checker, false))
             {
                 password = await passFinder.FindPasswordAsync(token).ConfigureAwait(false);
+            }
+
+            Console.WriteLine(string.Format(Thread.CurrentThread.CurrentCulture, Strings.OutputFormat, filename, password ?? "(none)"));
+        }
+
+        private void Start(string filename)
+        {
+            string password;
+
+            using (var checker = new PasswordChecker(filename))
+            using (var passFinder = new DePass(checker, false))
+            {
+                password = passFinder.FindPassword();
             }
 
             Console.WriteLine(string.Format(Thread.CurrentThread.CurrentCulture, Strings.OutputFormat, filename, password ?? "(none)"));

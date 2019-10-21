@@ -6,6 +6,7 @@
 namespace WordDePass
 {
     using System;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -36,19 +37,45 @@ namespace WordDePass
         }
 
         /// <summary>Finds the password.</summary>
+        /// <returns>The password.</returns>
+        public string FindPassword()
+        {
+            var alphabet = Alphabet.LowerCase +
+                Alphabet.UpperCase +
+                Alphabet.Numeric +
+                Alphabet.NonWhitespaceSymbol;
+
+            for (var i = 0; i < 10; i++)
+            {
+                var collection = new FixedLengthPasswordCollection(i, alphabet);
+                foreach (var password in collection)
+                {
+                    if (this.checker.CheckPassword(password))
+                    {
+                        return password;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>Finds the password.</summary>
         /// <param name="token">The cancellation token.</param>
         /// <returns>The password.</returns>
         public async Task<string> FindPasswordAsync(CancellationToken token)
         {
-            for (int i = 0; i < 5; i++)
-            {
-                var collection = new FixedLengthPasswordCollection(i, FixedLengthPasswordGenerator.LowerCaseLetters);
-                token.ThrowIfCancellationRequested();
+            var alphabet = Alphabet.LowerCase +
+                Alphabet.UpperCase +
+                Alphabet.Numeric +
+                Alphabet.NonWhitespaceSymbol;
 
+            for (var i = 0; i < 10; i++)
+            {
+                var collection = new FixedLengthPasswordCollection(i, alphabet);
                 foreach (var password in collection)
                 {
-                    var result = await this.checker.CheckPasswordAsync(password, token).ConfigureAwait(false);
-                    if (result)
+                    if (await this.checker.CheckPasswordAsync(password, token).ConfigureAwait(false))
                     {
                         return password;
                     }
