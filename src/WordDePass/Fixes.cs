@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------
 namespace WordDePass
 {
+    using System.Collections.Generic;
+
     /// <summary>A collection of a password <see cref="Prefix" />, and <see cref="Infix" />, and a <see cref="Suffix" />.</summary>
     public class Fixes
     {
@@ -58,6 +60,31 @@ namespace WordDePass
         public string ToString(string left, string right)
         {
             return ((object)this.Prefix).ToString() + left + this.Infix + right + this.Suffix;
+        }
+
+        /// <summary>
+        ///     Returns all strings that represents the current object adding the passed <paramref name="intermediate" /> to be split by
+        ///     the <see cref="Infix" /> in all possible ways.
+        /// </summary>
+        /// <param name="intermediate">The <see cref="string" /> to split to both sides of <see cref="Infix" />.</param>
+        /// <returns>
+        ///     A set of <c>intermediate.length + 1</c> items that represents all concatenations of <see cref="Prefix" />, some portion of
+        ///     <paramref name="intermediate" />, <see cref="Infix" />, the remaining portion of <paramref name="intermediate" />, and
+        ///     <see cref="Suffix" />.
+        /// </returns>
+        public IEnumerable<string> ToStrings(string intermediate)
+        {
+            yield return this.ToString(null, intermediate);
+
+            if (!string.IsNullOrEmpty(intermediate) && this.HasInfix)
+            {
+                for (var i = 1; i < intermediate.Length; i++)
+                {
+                    yield return this.ToString(intermediate.Substring(0, i), intermediate.Substring(i, intermediate.Length - i));
+                }
+
+                yield return this.ToString(intermediate, null);
+            }
         }
     }
 }

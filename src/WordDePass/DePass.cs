@@ -108,28 +108,15 @@ namespace WordDePass
         private async Task<string> FindPasswordAsync(Alphabet alphabet, int length, Fixes fixes, CancellationToken token)
         {
             var remainder = length - fixes.Length;
-
-            for (int leftLength = 0; leftLength <= remainder; leftLength++)
+            var collection = new FixedLengthPasswordCollection(remainder, alphabet);
+            foreach (var intermediate in collection)
             {
-                var rightLength = remainder - leftLength;
-
-                var leftCollection = new FixedLengthPasswordCollection(leftLength, alphabet);
-                foreach (var left in leftCollection)
+                foreach (var password in fixes.ToStrings(intermediate))
                 {
-                    var rightCollection = new FixedLengthPasswordCollection(rightLength, alphabet);
-                    foreach (var right in rightCollection)
+                    if (await this.checker.CheckPasswordAsync(password, token).ConfigureAwait(false))
                     {
-                        var password = fixes.ToString(left, right);
-                        if (await this.checker.CheckPasswordAsync(password, token).ConfigureAwait(false))
-                        {
-                            return password;
-                        }
+                        return password;
                     }
-                }
-
-                if (!fixes.HasInfix)
-                {
-                    break;
                 }
             }
 
