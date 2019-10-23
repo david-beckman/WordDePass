@@ -57,17 +57,30 @@ namespace WordDePass
 
             if (header.Length != HeaderLength)
             {
-                throw new ArgumentException("Header too short. It should be {0} but is {1}.", nameof(header));
+                throw new ArgumentException(
+                    string.Format(
+                        Thread.CurrentThread.CurrentCulture,
+                        Strings.Arg_TooShort,
+                        nameof(header),
+                        HeaderLength,
+                        header.Length),
+                    nameof(header));
             }
 
             if (!header.StartsWith(Signature))
             {
-                throw new NotSupportedException("The header does not start with the expected signature.");
+                throw new NotSupportedException(string.Format(
+                    Thread.CurrentThread.CurrentCulture,
+                    Strings.NotSupported_Signature,
+                    nameof(header)));
             }
 
             if (!header.Slice(ClsIdOffset, EmptyClsId.Length).SequenceEqual(EmptyClsId))
             {
-                throw new NotSupportedException("The header does not have a CLSID equal to CLSID_NULL.");
+                throw new NotSupportedException(string.Format(
+                    Thread.CurrentThread.CurrentCulture,
+                    Strings.NotSupported_Clsid,
+                    nameof(header)));
             }
 
             this.MajorVersion = BinaryPrimitives.ReadInt16LittleEndian(header.Slice(MajorVersionOffset, 2));
@@ -76,7 +89,7 @@ namespace WordDePass
             {
                 throw new NotSupportedException(string.Format(
                     Thread.CurrentThread.CurrentCulture,
-                    "Unsupported version: {0:X}.{1:X4}.",
+                    Strings.NotSupported_Version2,
                     this.MajorVersion,
                     this.MinorVerison));
             }
@@ -86,7 +99,7 @@ namespace WordDePass
             {
                 throw new NotSupportedException(string.Format(
                     Thread.CurrentThread.CurrentCulture,
-                    "Unsupported Byte Order (BOM): {0:X4}.",
+                    Strings.NotSupported_Bom,
                     bom));
             }
 
@@ -95,7 +108,7 @@ namespace WordDePass
             {
                 throw new NotSupportedException(string.Format(
                     Thread.CurrentThread.CurrentCulture,
-                    "Unsupported sector shift for v{0}.{1:X4}: {2:X}.",
+                    Strings.NotSupported_SectorShift,
                     this.MajorVersion,
                     this.MinorVerison,
                     this.SectorShift));
@@ -106,7 +119,7 @@ namespace WordDePass
             {
                 throw new NotSupportedException(string.Format(
                     Thread.CurrentThread.CurrentCulture,
-                    "Unsupported mini sector shift: {0:X}.",
+                    Strings.NotSupported_MiniSectorShift,
                     miniShift));
             }
 
@@ -116,7 +129,7 @@ namespace WordDePass
             {
                 throw new NotSupportedException(string.Format(
                     Thread.CurrentThread.CurrentCulture,
-                    "Unsupported mini stream cutoff size: {0:X}.",
+                    Strings.NotSupported_MiniStreamCutoff,
                     miniShift));
             }
         }
@@ -191,7 +204,7 @@ namespace WordDePass
         {
             return string.Format(
                 provider,
-                "Version: {0}.{1:X2}  Sector Shift: {2:X2}  Transaction Signature: {3:X8}",
+                Strings.ToString_CfbHeader,
                 this.MajorVersion,
                 this.MinorVerison,
                 this.SectorShift,

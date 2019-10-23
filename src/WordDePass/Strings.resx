@@ -122,10 +122,43 @@
   <data name="Arg_NonNegative" xml:space="preserve">
     <value>'{0}' must be non-negative.</value>
   </data>
+  <data name="Arg_TooShort" xml:space="preserve">
+    <value>{0} too short; it should be {1} but is {2}.</value>
+  </data>
   <data name="InvalidOperation_EnumEnded" xml:space="preserve">
     <value>Enumeration already finished.</value>
   </data>
   <data name="InvalidOperation_EnumNotStarted" xml:space="preserve">
     <value>Enumeration has not started. Call MoveNext.</value>
+  </data>
+  <data name="NotSupported_Bom" xml:space="preserve">
+    <value>Unsupported Byte Order (BOM): {0:X4}.</value>
+  </data>
+  <data name="NotSupported_Clsid" xml:space="preserve">
+    <value>{0} has an unexpected CLSID.</value>
+  </data>
+  <data name="NotSupported_FlagNotSet" xml:space="preserve">
+    <value>The {0} flag is not set.</value>
+  </data>
+  <data name="NotSupported_MiniSectorShift" xml:space="preserve">
+    <value>Unsupported mini sector shift: {0:X}.</value>
+  </data>
+  <data name="NotSupported_MiniStreamCutoff" xml:space="preserve">
+    <value>Unsupported mini stream cutoff size: {0:X}.</value>
+  </data>
+  <data name="NotSupported_SectorShift" xml:space="preserve">
+    <value>Unsupported sector shift for v{0}.{1:X4}: {2:X}.</value>
+  </data>
+  <data name="NotSupported_Signature" xml:space="preserve">
+    <value>{0} has an unexpected signature.</value>
+  </data>
+  <data name="NotSupported_Version1" xml:space="preserve">
+    <value>Unsupported version: {0}.</value>
+  </data>
+  <data name="NotSupported_Version2" xml:space="preserve">
+    <value>Unsupported version: {0:X}.{1:X4}.</value>
+  </data>
+  <data name="ToString_CfbHeader" xml:space="preserve">
+    <value>Version: {0}.{1:X2}  Sector Shift: {2:X2}  Transaction Signature: {3:X8}</value>
   </data>
 </root>

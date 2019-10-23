@@ -59,12 +59,22 @@ namespace WordDePass
 
             if (header.Length != HeaderLength)
             {
-                throw new ArgumentException("Header too short. It should be {0} but is {1}.", nameof(header));
+                throw new ArgumentException(
+                    string.Format(
+                        Thread.CurrentThread.CurrentCulture,
+                        Strings.Arg_TooShort,
+                        nameof(header),
+                        HeaderLength,
+                        header.Length),
+                    nameof(header));
             }
 
             if (BinaryPrimitives.ReadUInt16LittleEndian(header.Slice(SignatureOffset, 2)) != Signature)
             {
-                throw new NotSupportedException("The header does not start with the expected signature.");
+                throw new NotSupportedException(string.Format(
+                    Thread.CurrentThread.CurrentCulture,
+                    Strings.NotSupported_Signature,
+                    nameof(header)));
             }
 
             var version = BinaryPrimitives.ReadInt16LittleEndian(header.Slice(VersionOffset, 2));
@@ -72,7 +82,7 @@ namespace WordDePass
             {
                 throw new NotSupportedException(string.Format(
                     Thread.CurrentThread.CurrentCulture,
-                    "The header is for an invalid version: {0}.",
+                    Strings.NotSupported_Version1,
                     version));
             }
 
@@ -91,13 +101,20 @@ namespace WordDePass
             this.Obfuscated = (flags & MaskMObfuscated) != 0;
             if ((flags & MaskJExtended) == 0)
             {
-                throw new NotSupportedException("The extended flag is not set.");
+                throw new NotSupportedException(string.Format(
+                    Thread.CurrentThread.CurrentCulture,
+                    Strings.NotSupported_FlagNotSet,
+                    "extended"));
             }
 
             var fibBack = BinaryPrimitives.ReadInt16LittleEndian(header.Slice(FibBackOffset, 2));
             if (!ExpectedFibBackValues.Contains(fibBack))
             {
-                throw new NotSupportedException("The FIB Back is invalid: {0:X4}.");
+                throw new NotSupportedException(string.Format(
+                    Thread.CurrentThread.CurrentCulture,
+                    Strings.NotSupported_FlagNotSet,
+                    "FIB Back",
+                    fibBack));
             }
 
             this.Key = BinaryPrimitives.ReadUInt32LittleEndian(header.Slice(KeyOffset, 4));
