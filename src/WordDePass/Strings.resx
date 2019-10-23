@@ -131,6 +131,9 @@
   <data name="InvalidOperation_EnumNotStarted" xml:space="preserve">
     <value>Enumeration has not started. Call MoveNext.</value>
   </data>
+  <data name="NotSupported" xml:space="preserve">
+    <value>"The {0} is invalid: {1:X4}."</value>
+  </data>
   <data name="NotSupported_Bom" xml:space="preserve">
     <value>Unsupported Byte Order (BOM): {0:X4}.</value>
   </data>
