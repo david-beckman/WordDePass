@@ -165,6 +165,12 @@ namespace WordDePass.Conosle
             }
 
             hints.Alphabet = alphabet;
+
+            if (!filenames.Any())
+            {
+                throw new ArgumentException(Strings.Args_FilenameRequired);
+            }
+
             return (hints, filenames);
         }
 

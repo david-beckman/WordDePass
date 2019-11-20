@@ -21,6 +21,8 @@ namespace WordDePass.Conosle
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         internal static CultureInfo Culture { get; set; }
 
+        internal static string Args_FilenameRequired => ResourceManager.GetString(nameof(Args_FilenameRequired), Culture);
+
         internal static string Args_InvalidLength => ResourceManager.GetString(nameof(Args_InvalidLength), Culture);
 
         internal static string Args_UnknownOption => ResourceManager.GetString(nameof(Args_UnknownOption), Culture);
