@@ -47,7 +47,11 @@ namespace WordDePass
         /// <summary>Gets the unique likely prefixes for the password.</summary>
         /// <returns>The unique likely password prefixes.</returns>
         public IReadOnlyCollection<string> Prefixes =>
-            this.prefixes.Count != 0 ? this.prefixes.AsReadOnly() : (IReadOnlyCollection<string>)new[] { string.Empty };
+            this.HasPrefixes ? this.prefixes.AsReadOnly() : (IReadOnlyCollection<string>)new[] { string.Empty };
+
+        /// <summary>Gets a value indicating whether <see cref="Prefixes" /> is non-empty.</summary>
+        /// <returns><value>true</value> if <see cref="Prefixes" /> is non-empty; otherwise <value>false</value>.</returns>
+        public bool HasPrefixes => this.prefixes.Count != 0 && (this.prefixes.Count != 1 || string.IsNullOrEmpty(this.prefixes[0]));
 
         /// <summary>Gets the unique likely infixes (i.e. something in the middle) for the password.</summary>
         /// <returns>The unique likely password infixes.</returns>
@@ -55,13 +59,17 @@ namespace WordDePass
             this.HasInfixes ? this.infixes.AsReadOnly() : (IReadOnlyCollection<string>)new[] { string.Empty };
 
         /// <summary>Gets a value indicating whether <see cref="Infixes" /> is non-empty.</summary>
-        /// <returns><value>true</value> if <see cref="Infixes" /> is non-empty; other <value>false</value>.</returns>
-        public bool HasInfixes => this.infixes.Count != 0;
+        /// <returns><value>true</value> if <see cref="Infixes" /> is non-empty; otherwise <value>false</value>.</returns>
+        public bool HasInfixes => this.infixes.Count != 0 && (this.infixes.Count != 1 || string.IsNullOrEmpty(this.infixes[0]));
 
         /// <summary>Gets the lunique ikely suffixes for the password.</summary>
         /// <returns>The unique likely password suffixes.</returns>
         public IReadOnlyCollection<string> Suffixes =>
-            this.suffixes.Count != 0 ? this.suffixes.AsReadOnly() : (IReadOnlyCollection<string>)new[] { string.Empty };
+            this.HasSuffixes ? this.suffixes.AsReadOnly() : (IReadOnlyCollection<string>)new[] { string.Empty };
+
+        /// <summary>Gets a value indicating whether <see cref="Suffixes" /> is non-empty.</summary>
+        /// <returns><value>true</value> if <see cref="Suffixes" /> is non-empty; otherwise <value>false</value>.</returns>
+        public bool HasSuffixes => this.suffixes.Count != 0 && (this.suffixes.Count != 1 || string.IsNullOrEmpty(this.suffixes[0]));
 
         /// <summary>
         ///     Gets the cross-join of all fixes: <see cref="Prefixes" />, <see cref="Infixes" />, and <see cref="Suffixes" />.
@@ -70,6 +78,10 @@ namespace WordDePass
         public IReadOnlyList<Fixes> AllFixes => this.Prefixes
             .SelectMany(prefix => this.Infixes, (prefix, infix) => new { prefix, infix })
             .SelectMany(preInFix => this.Suffixes, (preInFix, suffix) => new Fixes(preInFix.prefix, preInFix.infix, suffix)).ToArray();
+
+        /// <summary>Gets a value indicating whether <see cref="AllFixes" /> is non-empty.</summary>
+        /// <returns><value>true</value> if <see cref="AllFixes" /> is non-empty; otherwise <value>false</value>.</returns>
+        public bool HasFixes => this.HasPrefixes || this.HasInfixes || this.HasSuffixes;
 
         /// <summary>
         ///     Gets or sets the likely minimum (inclusive) length for the password. Note that if the min and <see cref="MaxLength" /> are

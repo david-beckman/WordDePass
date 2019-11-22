@@ -1,4 +1,4 @@
-namespace WordDePass.Conosle
+namespace WordDePass.Console
 {
     using System.CodeDom.Compiler;
     using System.ComponentModel;

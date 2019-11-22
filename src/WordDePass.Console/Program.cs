@@ -3,7 +3,7 @@
 //     Copyright © 2019 David Beckman. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace WordDePass.Conosle
+namespace WordDePass.Console
 {
     using System;
     using System.Collections.Generic;

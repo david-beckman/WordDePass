@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5C7D95E5-FFC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordDePass", "src\WordDePass\WordDePass.csproj", "{16090068-BA8A-4F68-BD5E-D2E5265B7CBC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordDePass.Conosle", "src\WordDePass.Conosle\WordDePass.Conosle.csproj", "{7A814D55-60AA-4B01-A6DE-5D7A9F507B28}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordDePass.Console", "src\WordDePass.Console\WordDePass.Console.csproj", "{7A814D55-60AA-4B01-A6DE-5D7A9F507B28}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8073B79D-102F-4828-BDA5-BE9677B06CC4}"
 EndProject

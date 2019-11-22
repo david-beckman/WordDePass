@@ -53,11 +53,11 @@ namespace WordDePass
                 for (int i = 0; i < allFixes.Count; i++)
                 {
                     var fixes = allFixes[i];
-                    tasks[i] = Task.Run(async () =>
+                    tasks[i] = Task.Run(() =>
                     {
                         for (var length = hints.MinLength.Value; length <= hints.MaxLength.Value; length++)
                         {
-                            var password = await this.FindPasswordAsync(alphabet, length, fixes, tokenSource.Token).ConfigureAwait(false);
+                            var password = this.FindPassword(alphabet, length, fixes);
                             if (password != null)
                             {
                                 return password;
@@ -105,22 +105,15 @@ namespace WordDePass
             this.checker = null;
         }
 
-        private async Task<string> FindPasswordAsync(Alphabet alphabet, int length, Fixes fixes, CancellationToken token)
+        private string FindPassword(Alphabet alphabet, int length, Fixes fixes)
         {
             var remainder = length - fixes.Length;
-            var collection = new FixedLengthPasswordCollection(remainder, alphabet);
-            foreach (var intermediate in collection)
-            {
-                foreach (var password in fixes.ToStrings(intermediate))
-                {
-                    if (await this.checker.CheckPasswordAsync(password, token).ConfigureAwait(false))
-                    {
-                        return password;
-                    }
-                }
-            }
 
-            return null;
+            return new FixedLengthPasswordCollection(remainder, alphabet)
+                .SelectMany(intermediate => fixes.ToStrings(intermediate))
+                .AsParallel().AsUnordered()
+                .Where(this.checker.CheckPassword)
+                .Take(1).FirstOrDefault();
         }
     }
 }
