@@ -6,7 +6,6 @@
 namespace WordDePass
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -41,46 +40,21 @@ namespace WordDePass
         /// <param name="hints">The various password hints.</param>
         /// <param name="token">The cancellation token.</param>
         /// <returns>The password.</returns>
-        public async Task<string> FindPasswordAsync(PasswordHints hints = null, CancellationToken token = default)
+        public string FindPassword(PasswordHints hints = null, CancellationToken token = default)
         {
-            hints = hints ?? new PasswordHints();
-            var alphabet = hints.Alphabet;
+            hints ??= new PasswordHints();
 
-            using (var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
+            string result = null;
+            Parallel.ForEach(hints.GeneratePasswords(), new ParallelOptions { CancellationToken = token }, (password, loopState) =>
             {
-                var allFixes = hints.AllFixes;
-                var tasks = Enumerable.Range(0, hints.AllFixes.Count).Select(_ => (Task<string>)null).ToList();
-                for (int i = 0; i < allFixes.Count; i++)
+                if (this.checker.CheckPassword(password))
                 {
-                    var fixes = allFixes[i];
-                    tasks[i] = Task.Run(() =>
-                    {
-                        for (var length = hints.MinLength.Value; length <= hints.MaxLength.Value; length++)
-                        {
-                            var password = this.FindPassword(alphabet, length, fixes);
-                            if (password != null)
-                            {
-                                return password;
-                            }
-                        }
-
-                        return null;
-                    });
+                    result = password;
+                    loopState.Stop();
                 }
+            });
 
-                while (tasks.Count > 0)
-                {
-                    var first = await Task.WhenAny(tasks).ConfigureAwait(false);
-                    if (first.Result != null)
-                    {
-                        return first.Result;
-                    }
-
-                    tasks.Remove(first);
-                }
-            }
-
-            return null;
+            return result;
         }
 
         /// <inheritdoc />
@@ -103,17 +77,6 @@ namespace WordDePass
             }
 
             this.checker = null;
-        }
-
-        private string FindPassword(Alphabet alphabet, int length, Fixes fixes)
-        {
-            var remainder = length - fixes.Length;
-
-            return new FixedLengthPasswordCollection(remainder, alphabet)
-                .SelectMany(intermediate => fixes.ToStrings(intermediate))
-                .AsParallel().AsUnordered()
-                .Where(this.checker.CheckPassword)
-                .Take(1).FirstOrDefault();
         }
     }
 }

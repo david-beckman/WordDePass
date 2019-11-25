@@ -21,7 +21,7 @@ namespace WordDePass.Console
             this.hints = hints ?? new PasswordHints();
         }
 
-        private static async Task Main(string[] args)
+        private static void Main(string[] args)
         {
             (PasswordHints hints, IList<string> filenames) parsed;
             try
@@ -37,13 +37,7 @@ namespace WordDePass.Console
             }
 
             var program = new Program(parsed.hints);
-            using (var tokenSource = new CancellationTokenSource())
-            {
-                var tasks = parsed.filenames
-                    .Where(filename => !string.IsNullOrWhiteSpace(filename))
-                    .Select(filename => program.StartAsync(filename, tokenSource.Token));
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-            }
+            Parallel.ForEach(parsed.filenames, (filename) => program.Start(filename));
         }
 
         private static void PrintUsage()
@@ -174,14 +168,14 @@ namespace WordDePass.Console
             return (hints, filenames);
         }
 
-        private async Task StartAsync(string filename, CancellationToken token)
+        private void Start(string filename)
         {
             string password;
 
             using (var checker = new PasswordChecker(filename))
             using (var passFinder = new DePass(checker, false))
             {
-                password = await passFinder.FindPasswordAsync(this.hints, token).ConfigureAwait(false);
+                password = passFinder.FindPassword(this.hints);
             }
 
             Console.WriteLine(string.Format(Thread.CurrentThread.CurrentCulture, Strings.OutputFormat, filename, password ?? "(unknown)"));

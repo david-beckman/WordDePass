@@ -51,7 +51,7 @@ namespace WordDePass
 
         /// <summary>Gets a value indicating whether <see cref="Prefixes" /> is non-empty.</summary>
         /// <returns><value>true</value> if <see cref="Prefixes" /> is non-empty; otherwise <value>false</value>.</returns>
-        public bool HasPrefixes => this.prefixes.Count != 0 && (this.prefixes.Count != 1 || string.IsNullOrEmpty(this.prefixes[0]));
+        public bool HasPrefixes => this.prefixes.Count != 0 && (this.prefixes.Count != 1 || !string.IsNullOrEmpty(this.prefixes[0]));
 
         /// <summary>Gets the unique likely infixes (i.e. something in the middle) for the password.</summary>
         /// <returns>The unique likely password infixes.</returns>
@@ -60,7 +60,7 @@ namespace WordDePass
 
         /// <summary>Gets a value indicating whether <see cref="Infixes" /> is non-empty.</summary>
         /// <returns><value>true</value> if <see cref="Infixes" /> is non-empty; otherwise <value>false</value>.</returns>
-        public bool HasInfixes => this.infixes.Count != 0 && (this.infixes.Count != 1 || string.IsNullOrEmpty(this.infixes[0]));
+        public bool HasInfixes => this.infixes.Count != 0 && (this.infixes.Count != 1 || !string.IsNullOrEmpty(this.infixes[0]));
 
         /// <summary>Gets the lunique ikely suffixes for the password.</summary>
         /// <returns>The unique likely password suffixes.</returns>
@@ -69,7 +69,7 @@ namespace WordDePass
 
         /// <summary>Gets a value indicating whether <see cref="Suffixes" /> is non-empty.</summary>
         /// <returns><value>true</value> if <see cref="Suffixes" /> is non-empty; otherwise <value>false</value>.</returns>
-        public bool HasSuffixes => this.suffixes.Count != 0 && (this.suffixes.Count != 1 || string.IsNullOrEmpty(this.suffixes[0]));
+        public bool HasSuffixes => this.suffixes.Count != 0 && (this.suffixes.Count != 1 || !string.IsNullOrEmpty(this.suffixes[0]));
 
         /// <summary>
         ///     Gets the cross-join of all fixes: <see cref="Prefixes" />, <see cref="Infixes" />, and <see cref="Suffixes" />.
@@ -77,7 +77,7 @@ namespace WordDePass
         /// <returns>The cross join of all fixes.</returns>
         public IReadOnlyList<Fixes> AllFixes => this.Prefixes
             .SelectMany(prefix => this.Infixes, (prefix, infix) => new { prefix, infix })
-            .SelectMany(preInFix => this.Suffixes, (preInFix, suffix) => new Fixes(preInFix.prefix, preInFix.infix, suffix)).ToArray();
+            .SelectMany(pi => this.Suffixes, (pi, suffix) => new Fixes(pi.prefix, pi.infix, suffix)).ToArray();
 
         /// <summary>Gets a value indicating whether <see cref="AllFixes" /> is non-empty.</summary>
         /// <returns><value>true</value> if <see cref="AllFixes" /> is non-empty; otherwise <value>false</value>.</returns>
@@ -88,22 +88,37 @@ namespace WordDePass
         ///     the same, that is saying that the password is explicitly that long.
         /// </summary>
         /// <returns>The likely lower bound (inclusive) for the password length.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="value" /> is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="value" /> is negative or greater than <see cref="MaxLength" />.</exception>
         public int? MinLength
         {
             get
             {
-                return this.min ?? DefaultMin;
+                return this.min;
             }
 
             set
             {
-                if (value != null && value.Value < 0)
+                if (value != null)
                 {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(value),
-                        value,
-                        string.Format(Thread.CurrentThread.CurrentCulture, Strings.Arg_NonNegative, nameof(value)));
+                    if (value.Value < 0)
+                    {
+                        throw new ArgumentOutOfRangeException(
+                            nameof(value),
+                            value,
+                            string.Format(Thread.CurrentThread.CurrentCulture, Strings.Arg_NonNegative, nameof(value)));
+                    }
+                    else if (value.Value > this.MaxLength)
+                    {
+                        var message = string.Format(
+                            Thread.CurrentThread.CurrentCulture,
+                            Strings.Arg_GreaterThanOrEqualTo,
+                            nameof(this.MaxLength),
+                            nameof(this.MinLength));
+                        throw new ArgumentOutOfRangeException(
+                            nameof(value),
+                            value,
+                            message);
+                    }
                 }
 
                 this.min = value;
@@ -115,26 +130,66 @@ namespace WordDePass
         ///     the same, that is saying that the password is explicitly that long.
         /// </summary>
         /// <returns>The likely upper bound (inclusive) for the password length.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="value" /> is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="value" /> is negative or less than <see cref="MinLength" />.</exception>
         public int? MaxLength
         {
             get
             {
-                return this.max ?? DefaultMax;
+                return this.max;
             }
 
             set
             {
-                if (value != null && value.Value < 0)
+                if (value != null)
                 {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(value),
-                        value,
-                        string.Format(Thread.CurrentThread.CurrentCulture, Strings.Arg_NonNegative, nameof(value)));
+                    if (value.Value < 0)
+                    {
+                        throw new ArgumentOutOfRangeException(
+                            nameof(value),
+                            value,
+                            string.Format(Thread.CurrentThread.CurrentCulture, Strings.Arg_NonNegative, nameof(value)));
+                    }
+                    else if (value.Value < this.MinLength)
+                    {
+                        var message = string.Format(
+                            Thread.CurrentThread.CurrentCulture,
+                            Strings.Arg_GreaterThanOrEqualTo,
+                            nameof(this.MaxLength),
+                            nameof(this.MinLength));
+                        throw new ArgumentOutOfRangeException(
+                            nameof(value),
+                            value,
+                            message);
+                    }
                 }
 
                 this.max = value;
             }
+        }
+
+        /// <summary>
+        ///     Generates the set of all passwords this set of hints results in. If <see cref="MinLength" /> is not defined, then a minimum
+        ///     length of 0 is used. If a <see cref="MaxLength" /> is not defined, then a maximim length of 16 is used.
+        /// </summary>
+        /// <returns>The set of passwords possible given the hints specified.</returns>
+        public IEnumerable<string> GeneratePasswords()
+        {
+            var min = this.min ?? DefaultMin;
+            var max = this.max ?? DefaultMax;
+            var count = max - min + 1;
+            return Enumerable.Range(min, count)
+                .SelectMany(length => this.AllFixes, (length, fix) => new { length, fix })
+                .SelectMany(lf =>
+                {
+                    var remainder = lf.length - lf.fix.Length;
+                    if (remainder < 0)
+                    {
+                        return Array.Empty<string>();
+                    }
+
+                    return new FixedLengthPasswordCollection(remainder, this.Alphabet)
+                        .SelectMany(intermediate => lf.fix.ToStrings(intermediate));
+                });
         }
 
         /// <summary>

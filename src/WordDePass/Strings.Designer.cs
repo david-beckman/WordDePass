@@ -21,6 +21,8 @@ namespace WordDePass
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         internal static CultureInfo Culture { get; set; }
 
+        internal static string Arg_GreaterThanOrEqualTo => ResourceManager.GetString(nameof(Arg_GreaterThanOrEqualTo), Culture);
+
         internal static string Arg_NonNegative => ResourceManager.GetString(nameof(Arg_NonNegative), Culture);
 
         internal static string InvalidOperation_EnumEnded => ResourceManager.GetString(nameof(InvalidOperation_EnumEnded), Culture);
